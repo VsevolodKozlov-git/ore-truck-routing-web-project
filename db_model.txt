@@ -1,0 +1,30 @@
+
+
+Truck {
+	id_truck integer pk increments
+	board_number varchar
+	id_model integer >* TruckModel.id_model
+}
+
+TruckContent {
+	weight_t float
+	id_truck_content integer pk increments
+	id_truck integer >* Truck.id_truck
+	sio2_proportion float
+	fe_proportion float
+}
+
+TruckModel {
+	id_model integer pk increments
+	name varchar
+	max_weight_t float
+}
+
+Storage {
+	id_storage integer pk increments
+	coordinates polygon
+	weight_t float
+	sio2_proportion float
+	fe_proportion float
+}
+
