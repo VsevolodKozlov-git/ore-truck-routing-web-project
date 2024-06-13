@@ -1,72 +1,91 @@
 {% load utils %}
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Тест</title>
+    <title>Рассчет разгрузки</title>
+    <link rel="stylesheet" type="text/css" href={% static "styles.css" %}>
 </head>
 
 <body>
-    <form method="POST" id="coordinate-form">
-        {% csrf_token %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Бортовой номер</th>
-                    <th>Модель</th>
-                    <th>Макс. грузоподъемность</th>
-                    <th>Текущий вес</th>
-                    <th>Перегруз %</th>
-                    <th>Координаты разгрузки (x, y)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for id, input_row in input_table.items %}
-                    <tr>
-                        <td>{{ input_row.board_number }}</td>
-                        <td>{{ input_row.model }}</td>
-                        <td>{{ input_row.max_weight }}</td>
-                        <td>{{ input_row.current_weight }}</td>
-                        <td>{{ input_row.overload }}</td>
-                        <td>
-                            {{ coord_forms_dict|get_item:id }}
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
 
-        {{ storage_form.as_p }}
-        <input type="submit" value="Send">
-    </form>
+    <header>
+        <h1>Рассчет разгрузки</h1>
+    </header>
+    <div class="form-container">
+
+        <h2>Вввод:</h2>
+        <p>Введите координаты самосвалов:</p>
+        <form method="POST" id="coordinate-form">
+            {% csrf_token %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Бортовой номер</th>
+                        <th>Модель</th>
+                        <th>Макс. грузоподъемность</th>
+                        <th>Текущий вес</th>
+                        <th>Перегруз %</th>
+                        <th>Координаты разгрузки (x, y)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for id, input_row in input_table.items %}
+                        <tr>
+                            <td>{{ input_row.board_number }}</td>
+                            <td>{{ input_row.model }}</td>
+                            <td>{{ input_row.max_weight }}</td>
+                            <td>{{ input_row.current_weight }}</td>
+                            <td>{{ input_row.overload }}</td>
+                            <td>
+                                {{ coord_forms_dict|get_item:id }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {{ storage_form.as_p }}
+            <input type="submit" value="Расчитать">
+        </form>
+    </div>
+
 
     {% if output_row %}
-        <h2>Результат:</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Название склада</th>
-                    <th>Объем до разгрузки, Т</th>
-                    <th>Объем после разгрузки, Т</th>
-                    <th>Качественные хар-ки после разгрузки</th>
+        <div class="form-container">
+            <h2>Результат:</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Название склада</th>
+                        <th>Объем до разгрузки, Т</th>
+                        <th>Объем после разгрузки, Т</th>
+                        <th>Качественные хар-ки после разгрузки</th>
 
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{{ output_row.name }}</td>
-                    <td>{{ output_row.weight_before }}</td>
-                    <td>{{ output_row.weight_after }}</td>
-                    <td>
-                        {{ output_row.sio2_percentage }} SiO2 {{ output_row.fe_percentage }} Fe
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ output_row.name }}</td>
+                        <td>{{ output_row.weight_before }}</td>
+                        <td>{{ output_row.weight_after }}</td>
+                        <td>
+                            {{ output_row.sio2_percentage }} SiO2 {{ output_row.fe_percentage }} Fe
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     {% endif %}
-
-    {% if valid %}
-        <p>Congratulations! Valid form</p>
-    {% endif %}
+    <div class='footer-wrap'>
+        <footer>
+            <p>
+                Telegram: <a href="https://t.me/Vsevolod026">@Vsevolod026</a>; 
+                Email: <a href= "mailto: vsevolod026@gmail.com"> vsevolod026@gmail.com </a>
+            </p>
+        </footer>
+    </div>
+    
 
 </body>

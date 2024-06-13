@@ -39,5 +39,5 @@ class CoordinateForm(forms.Form):
 class StorageChoiceForm(forms.Form):
     storage = forms.ModelChoiceField(
         queryset=models.Storage.objects.all(),
-        label="Выберите склад"
+        label="Выберете склад:"
     )
