@@ -47,6 +47,8 @@ class RootView(View):
         coord_forms_dict = self.get_coord_forms_dict(request, truck_ids)
         # Получаем итоговую таблицу из сессии, если таковая имеется
         output_row = request.session.get("output_row", None)
+        # Удаляем итоговую таблицу из сессии, чтобы при перезагрузке она пропала
+        request.session['output_row'] = None
         # Создаем форму для выбора склада
         storage_form = forms.StorageChoiceForm(prefix="storage")
         context = {
@@ -224,56 +226,57 @@ class Proportion:
         return self.weight_proportion / self.weight_full
 
 
-class TestView(View):
-    def get(self, request, *args, **kwargs):
-        input_table = self.get_input_table()
-        request.session["input_table"] = input_table
-        valid = request.session.get("valid", False)
-        # create form_dict
-        forms_dict = {}
-        for _id in input_table.keys():
-            form = forms.CoordinateForm(prefix=str(_id))
-            forms_dict[_id] = form
+# class TestView(View):
+#     def get(self, request, *args, **kwargs):
+#         input_table = self.get_input_table()
+#         request.session["input_table"] = input_table
+#         valid = request.session.get("valid", False)
+#         # create form_dict
+#         forms_dict = {}
+#         for _id in input_table.keys():
+#             form = forms.CoordinateForm(prefix=str(_id))
+#             forms_dict[_id] = form
 
-        context = {
-            "input_table": input_table,
-            "valid": valid,
-            "forms_dict": forms_dict,
-        }
-        return render(request, "test.html", context)
+#         context = {
+#             "input_table": input_table,
+#             "valid": valid,
+#             "forms_dict": forms_dict,
+#         }
+        
+#         return render(request, "test.html", context)
 
-    def post(self, request, *args, **kwargs):
-        input_table = request.session["input_table"]
-        # create form dict
-        forms_dict = {}
-        for _id in input_table.keys():
-            form = forms.CoordinateForm(request.POST, prefix=str(_id))
-            forms_dict[_id] = form
+#     def post(self, request, *args, **kwargs):
+#         input_table = request.session["input_table"]
+#         # create form dict
+#         forms_dict = {}
+#         for _id in input_table.keys():
+#             form = forms.CoordinateForm(request.POST, prefix=str(_id))
+#             forms_dict[_id] = form
 
-        valid = self.is_forms_valid(forms_dict.values())
-        request.session["valid"] = valid
-        if valid:
-            return redirect(reverse("test"))
+#         valid = self.is_forms_valid(forms_dict.values())
+#         request.session["valid"] = valid
+#         if valid:
+#             return redirect(reverse("test"))
 
-        context = {
-            "input_table": input_table,
-            "valid": valid,
-            "forms_dict": forms_dict,
-        }
-        return render(request, "test.html", context)
+#         context = {
+#             "input_table": input_table,
+#             "valid": valid,
+#             "forms_dict": forms_dict,
+#         }
+#         return render(request, "test.html", context)
 
-    def is_forms_valid(self, forms_list):
-        validation = True
-        for form in forms_list:
-            # Важно вызвать is_valid у всех форм, потому что иначе не будет
-            # выведено сообщение об ошибке
-            validation = form.is_valid() and validation
-        return validation
+#     def is_forms_valid(self, forms_list):
+#         validation = True
+#         for form in forms_list:
+#             # Важно вызвать is_valid у всех форм, потому что иначе не будет
+#             # выведено сообщение об ошибке
+#             validation = form.is_valid() and validation
+#         return validation
 
-    def get_input_table(self):
-        ids = [1, 2]
-        names = ["first", "second"]
-        input_table = {}
-        for _id, name in zip(ids, names):
-            input_table[_id] = name
-        return input_table
+#     def get_input_table(self):
+#         ids = [1, 2]
+#         names = ["first", "second"]
+#         input_table = {}
+#         for _id, name in zip(ids, names):
+#             input_table[_id] = name
+#         return input_table
