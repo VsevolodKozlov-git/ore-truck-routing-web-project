@@ -1,18 +1,16 @@
-from dataclasses import dataclass
+from typing import Dict, List, TypedDict
 
+from django.contrib.gis.geos import Point, Polygon
 from django.shortcuts import redirect, render
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.views import View
 
 from app import forms, models
-from typing import Dict
-
-from django.contrib.gis.geos import Point, Polygon
-from typing import TypedDict
-
 
 
 class OutputRow(TypedDict):
+    """Словарь с данными для выходной таблицы
+    """
     name: str
     weight_before: float
     weight_after: float
@@ -20,8 +18,9 @@ class OutputRow(TypedDict):
     fe_percentage: float
 
 
-
 class InputRow(TypedDict):
+    """Словарь с данными о самосвале
+    """
     board_number: str
     model: str
     max_weight: float
@@ -37,11 +36,18 @@ CoordFormsDict = Dict[int, forms.CoordinateForm]
 
 
 class RootView(View):
+    """Главный view приложения"""
+
     def get(self, request, *args, **kwargs):
+        # Получаем данные о самосвалах
         input_table = self.get_input_table()
         request.session["input_table"] = input_table
-        coord_forms_dict = self.get_coord_forms_dict(request, input_table)
+        truck_ids = list(input_table.keys())
+        # Получаем формы координат для самосвалой
+        coord_forms_dict = self.get_coord_forms_dict(request, truck_ids)
+        # Получаем итоговую таблицу из сессии, если таковая имеется
         output_row = request.session.get("output_row", None)
+        # Создаем форму для выбора склада
         storage_form = forms.StorageChoiceForm(prefix="storage")
         context = {
             "input_table": input_table,
@@ -52,6 +58,7 @@ class RootView(View):
         return render(request, "root.html", context=context)
 
     def get_input_table(self) -> InputTable:
+        """Создает и возвращает словарь словарей, в котором записаны все необходимые данные о самосвалах"""
         trucks_contents = models.TruckContent.objects.all()
 
         input_table: InputTable = {}
@@ -65,7 +72,7 @@ class RootView(View):
             sio2_proportion = truck_content.sio2_proportion
             fe_proportion = truck_content.fe_proportion
             overload = round((weight / max_weight - 1) * 100, 2)
-            overload = max(overload, 0) # Чтобы не был меньше 0
+            overload = max(overload, 0)  # Чтобы не был меньше 0
             table_row = InputRow(
                 board_number=board_number,
                 model=model,
@@ -80,24 +87,26 @@ class RootView(View):
         return input_table
 
     def get_coord_forms_dict(
-        self, request, input_table: InputTable
+        self, request, truck_ids: List[int]
     ) -> CoordFormsDict:
+        """Создает и возвращает словарь, где по id самосвала можно получить форму для координат этого самосвала
+
+        Args:
+            request: запрос пользователя
+            truck_ids (List[int]): Список id самосвалов
+        """
         coord_forms_dict = {}
-        for _id in input_table.keys():
+        for _id in truck_ids:
             form = forms.CoordinateForm(request.POST or None, prefix=str(_id))
             coord_forms_dict[_id] = form
         return coord_forms_dict
 
     def post(self, request, *args, **kwargs):
-        """
-        Такая работа с id сделана, чтобы предотвратить случай при котором
-        будет добавлен новый самосвал с грузом во время передачи post запроса
-
-        """
         # Получаем таблицу из get-запроса
         input_table: InputTable = request.session["input_table"]
+        truck_ids = list(input_table.keys())
         # Создаем формы
-        coord_forms_dict = self.get_coord_forms_dict(request, input_table)
+        coord_forms_dict = self.get_coord_forms_dict(request, truck_ids)
         storage_form = forms.StorageChoiceForm(request.POST, prefix="storage")
         # Валидируем формы
         forms_list = [form for form in coord_forms_dict.values()]
@@ -105,12 +114,14 @@ class RootView(View):
         is_valid = self.is_forms_valid(forms_list)
 
         if is_valid:
-            storage: models.Storage = storage_form.cleaned_data["storage"]
+            # Преобразуем координаты из форм в словарь кортежей
             coord_tuples_dict = self.get_coord_tuples_dict(coord_forms_dict)
+            # Получаем склад из формы
+            storage: models.Storage = storage_form.cleaned_data["storage"]
+            # Получаем и записываем в сессию итоговую таблицу
             output_row = self.get_output_row(
                 input_table, coord_tuples_dict, storage
             )
-            print(f'output_row: {output_row}')
             request.session["output_row"] = output_row
             return redirect(reverse("root"))
 
@@ -120,20 +131,29 @@ class RootView(View):
             "coord_forms_dict": coord_forms_dict,
             "output_row": None,
         }
-
         return render(request, "root.html", context=context)
 
     @staticmethod
     def is_forms_valid(forms_list) -> bool:
+        """Вызывает is_valid у всех форм в списке и возвращает "Все ли формы валидны"
+
+        Args:
+            forms_list (_type_): _description_
+
+        Returns:
+            bool: _description_
+        """
         validation = True
         for form in forms_list:
-            # Важно вызвать is_valid у всех форм, потому что иначе не будет
-            # выведено сообщение об ошибке
+            # Важно вызвать is_valid у всех форм, потому что иначе не будет выведено сообщение об ошибке
             validation = form.is_valid() and validation
         return validation
 
     @staticmethod
-    def get_coord_tuples_dict(coord_forms_dict) -> CoordTuplesDict:
+    def get_coord_tuples_dict(
+        coord_forms_dict: CoordFormsDict,
+    ) -> CoordTuplesDict:
+        """Преобразует словарь форм в словарь кортежей с координатами"""
         coord_tuples_dict = {}
         for _id, coord_form in coord_forms_dict.items():
             coord_str = coord_form.cleaned_data["coordinates"]
@@ -147,24 +167,24 @@ class RootView(View):
         coord_tuples_dict: CoordTuplesDict,
         storage: models.Storage,
     ) -> OutputRow:
+        """Генерирует данные для выходной таблицы"""
         storage_polygon: Polygon = storage.coordinates
         sio2_proportion = Proportion(storage.weight_t, storage.sio2_proportion)
         fe_proportion = Proportion(storage.weight_t, storage.fe_proportion)
-        
+
         weight_after = storage.weight_t
         for _id, input_row in input_table.items():
             x, y = coord_tuples_dict[_id]
             point = Point(x, y)
-            # Если не попал в polygon, но continue
-            if storage_polygon.intersects(point):
+            if storage_polygon.intersects(point):  # Проверка на попадание
                 sio2_proportion.add(
-                    input_row['current_weight'], input_row["sio2_proportion"]
+                    input_row["current_weight"], input_row["sio2_proportion"]
                 )
                 fe_proportion.add(
-                    input_row["current_weight"], input_row['fe_proportion']
+                    input_row["current_weight"], input_row["fe_proportion"]
                 )
-                weight_after += input_row['current_weight']
-        
+                weight_after += input_row["current_weight"]
+
         sio2_percentage = round(sio2_proportion.get_proportion() * 100, 2)
         fe_percentage = round(fe_proportion.get_proportion() * 100, 2)
         output_row = OutputRow(
@@ -172,15 +192,25 @@ class RootView(View):
             weight_before=storage.weight_t,
             weight_after=weight_after,
             sio2_percentage=sio2_percentage,
-            fe_percentage=fe_percentage
+            fe_percentage=fe_percentage,
         )
         return output_row
 
 
 class Proportion:
+    """Класс для рассчета пропорции"""
+
     def __init__(
         self, initial_weight_full: float, initial_proportion: float
     ) -> None:
+        """
+        Args:
+            initial_weight_full (float): Полный вес
+            initial_proportion (float): Пропорция вещества в весе
+
+        Raises:
+            ValueError: Пропорция находится не в интервале [0; 1]
+        """
         if not (0 <= initial_proportion <= 1):
             raise ValueError("Proportion should be between 0 and 1")
         self.weight_full = initial_weight_full
