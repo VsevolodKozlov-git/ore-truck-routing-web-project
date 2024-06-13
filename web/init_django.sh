@@ -5,7 +5,8 @@ export PYTHONPATH="${PYTHONPATH}:${pwd}"
 PROFILE_FILE="$HOME/.profile"
 
 if [ -z "$IS_DJANGO_SET" ]; then
-    echo "Начинает инициализация джано"
+    echo "Начинает инициализация джанго"
+    python manage.py collectstatic
     python manage.py makemigrations app
     python manage.py migrate
     python manage.py runscript create_super_user
@@ -20,7 +21,5 @@ else
   echo "Этап инициализации django пропущен"
 fi
 
-# Чтобы скрипт работал вечно
-tail -f /dev/null
 # python manage.py runserver 0.0.0.0:8100
 

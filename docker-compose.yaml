@@ -11,10 +11,12 @@ services:
       retries: 5
       start_period: 10s
     env_file:
-      - ./.env
+      - ./dev.env
 
   web:
-    build: ./web
+    build: 
+      context: ./web
+      dockerfile: Dockerfile
     volumes:
       - ./web:/app:cached
     ports:
@@ -23,8 +25,9 @@ services:
       db:
         condition: service_healthy
         restart: true
-    command: sh -c 'chmod +x ./start_django.sh && chmod +x ./init_django.sh  && ./init_django.sh'
+    # Дает права запуска на файлы, инициализирует django и вводит в бесконечный простой при помощи tail
+    command: sh -c 'chmod +x ./start_django.sh && chmod +x ./init_django.sh  && ./init_django.sh && tail -f /dev/null'
     env_file:
-      - ./.env
+      - ./dev.env
         
 #  sh -c "source /app/venv/bin/activate" && 

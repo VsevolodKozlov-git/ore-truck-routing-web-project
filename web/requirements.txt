@@ -2,3 +2,5 @@ django
 tzdata
 psycopg2-binary
 django_extensions
+gunicorn==21.2.0
+django-cors-headers

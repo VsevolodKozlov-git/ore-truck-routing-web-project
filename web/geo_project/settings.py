@@ -23,11 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_env_variable("DJANGO_SECRET_KEY")
 
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = get_env_variable('DJANGO_DEBUG')
 
-ALLOWED_HOSTS = []
-
+# ALLOWED_HOSTS = get_env_variable('DJANGO_ALLOWED_HOSTS').split()
+ALLOWED_HOSTS = ['*'] # Да, я знаю, что так делать не надо
 
 # Application definition
 
@@ -40,7 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "django_extensions",
-    "app",
+    "app"
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+
 
 ROOT_URLCONF = "geo_project.urls"
 
@@ -125,6 +128,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = "/static/"
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

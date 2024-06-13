@@ -35,9 +35,10 @@ CoordTuplesDict = Dict[int, tuple]
 CoordFormsDict = Dict[int, forms.CoordinateForm]
 
 
+
 class RootView(View):
     """Главный view приложения"""
-
+    
     def get(self, request, *args, **kwargs):
         # Получаем данные о самосвалах
         input_table = self.get_input_table()

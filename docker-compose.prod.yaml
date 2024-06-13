@@ -1,0 +1,46 @@
+services:
+  db:
+    build: ./db
+    ports:
+      - 5100:5432
+    healthcheck:
+
+      test: [CMD-SHELL, "./healthcheck.sh"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    env_file:
+      - ./prod.env
+
+  web:
+    build: 
+      context: ./web
+      dockerfile: Dockerfile.prod
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+    expose:
+      - 8100
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+    command: sh -c 'chmod +x ./start_django.sh && chmod +x ./init_django.sh  && ./init_django.sh && ./start_django.sh'
+    env_file:
+      - ./prod.env
+
+
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+    ports:
+      # Если заменить на 1337:80, то вылезает CSRF при отправке формы. Почему так происходит?
+      - 80:80
+    depends_on:
+      - web
+
+  
+        
+volumes:
+  static_volume:
