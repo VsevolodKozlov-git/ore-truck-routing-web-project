@@ -29,15 +29,15 @@ class CoordinatesParser:
 
 class CoordinateForm(forms.Form):
     coordinates = forms.CharField(
+        label='',
         max_length=50,
         min_length=3,
-        validators=[CoordinatesParser.two_floats_validator],
+        validators=[CoordinatesParser.two_floats_validator]
     )
 
 
 class StorageChoiceForm(forms.Form):
     storage = forms.ModelChoiceField(
         queryset=models.Storage.objects.all(),
-        label="Выберите склад",
-        help_text="Выберите склад"
+        label="Выберите склад"
     )

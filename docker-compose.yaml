@@ -23,7 +23,7 @@ services:
       db:
         condition: service_healthy
         restart: true
-    command: sh -c 'chmod +x ./start_django.sh && ./start_django.sh'
+    command: sh -c 'chmod +x ./start_django.sh && chmod +x ./init_django.sh  && ./init_django.sh'
     env_file:
       - ./.env
         
