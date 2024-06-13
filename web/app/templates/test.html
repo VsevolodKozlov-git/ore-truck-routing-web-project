@@ -1,0 +1,38 @@
+{% load utils %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Тест</title>
+</head>
+
+<body>
+    <form method="POST">
+        {% csrf_token %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Form</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for id, name in input_table_data.items %}
+                    {% with form=forms_dict|get_item:id %}
+                    <tr>
+                        <td>{{ name }}</td>
+                        <td>{{ form }}</td>
+                    </tr>
+                    {% endwith %}
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <input type="submit" value="Send">   
+    </form>
+
+
+    {% if valid %}
+        <p>Congratulations! Valid form</p>
+    {% endif %}
+</body>

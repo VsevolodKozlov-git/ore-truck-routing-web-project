@@ -65,6 +65,7 @@ def run():
     polygon = GEOSGeometry(wkt)
     storage = models.Storage(
         coordinates=polygon,
+        name="Склад 1",
         weight_t=900,
         sio2_proportion=0.34,
         fe_proportion=0.66,

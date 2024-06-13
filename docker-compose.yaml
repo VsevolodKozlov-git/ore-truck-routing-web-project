@@ -10,10 +10,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    environment:
-      - POSRGRES_USER=postgres
-      - POSTGRES_PASSWORD=786811
-      - POSTGRES_DB=career
+    env_file:
+      - ./.env
 
   web:
     build: ./web

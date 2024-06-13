@@ -36,7 +36,7 @@ class TruckContent(models.Model):
         verbose_name="Самосвал",
         on_delete=models.RESTRICT,
     )
-    
+
     weight_t = models.FloatField(
         verbose_name="Вес руды в тоннах", validators=weight_validators
     )
@@ -50,6 +50,7 @@ class TruckContent(models.Model):
 
 class Storage(models.Model):
     coordinates = models.PolygonField(verbose_name="Координаты хранилища")
+    name = models.CharField(max_length=100, verbose_name="Склад 1")
     weight_t = models.FloatField(
         verbose_name="Текущий вес руды в тоннах", validators=weight_validators
     )
@@ -60,3 +61,6 @@ class Storage(models.Model):
     fe_proportion = models.FloatField(
         verbose_name="доля Fe", validators=proportion_validators
     )
+
+    def __str__(self):
+        return str(self.name)

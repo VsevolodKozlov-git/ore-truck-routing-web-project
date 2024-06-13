@@ -5,7 +5,7 @@ models_list = [
     models.Truck,
     models.TruckModel,
     models.TruckContent,
-    models.Storage
+    models.Storage,
 ]
 
 for model in models_list:
