@@ -5,7 +5,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Рассчет разгрузки</title>
+    <title>Расчет разгрузки</title>
     <link rel="stylesheet" type="text/css" href={% static "styles.css" %}>
 </head>
 
@@ -16,7 +16,7 @@
     </header>
     <div class="form-container">
 
-        <h2>Вввод:</h2>
+        <h2>Ввод:</h2>
         <p>Введите координаты самосвалов:</p>
         <form method="POST" >{% csrf_token %}
             <table>
@@ -46,7 +46,7 @@
                 </tbody>
             </table>
             {{ storage_form.as_p }}
-            <input type="submit" value="Расчитать">
+            <input type="submit" value="Рассчитать">
         </form>
     </div>
 
