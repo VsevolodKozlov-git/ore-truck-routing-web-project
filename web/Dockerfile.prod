@@ -2,23 +2,26 @@ FROM ghcr.io/osgeo/gdal:alpine-small-latest
 # FROM python:3.10
 
 ENV PYTHONUNBUFFERED 1
-
+# Устанавливаю python и библиотеки для GeoDjango с PostGis
 RUN apk update && apk upgrade --no-cache
 RUN apk add --no-cache python3 py3-pip postgresql-client geos
-
+# Создаю виртуальное окружение
 WORKDIR /requirements
 RUN python3 -m venv /requirements/venv
-ENV PATH="/requirements/venv/bin:$PATH"
-
+# Добавляю папку окружения в начало path, чтобы оно всегда было активировано 
+ENV PATH="/requirements/venv/bin:$PATH" 
+# Устанавливаю requirements
 COPY requirements.txt .
 RUN /requirements/venv/bin/pip install --upgrade pip
 RUN /requirements/venv/bin/pip install -r requirements.txt
 
-
+# Создаю структуру для приложения
+# Приложение создается в папке home, потому что иначе nginx не сможет обратиться к staticfiles.
+# Ему не хватит прав для этого
 WORKDIR /
 RUN mkdir -p /home/app
 RUN mkdir -p /home/app/web
 RUN mkdir -p /home/app/web/staticfiles
-
+# Копирую приложение
 WORKDIR /home/app/web
 COPY . .
